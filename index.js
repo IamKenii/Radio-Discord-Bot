@@ -1,85 +1,83 @@
-const Discord = require('discord.js');
-const client = new Discord.Client();
-const config = require("./config.json");
+const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder } = require('discord.js');
+const { joinVoiceChannel, createAudioResource, createAudioPlayer, AudioPlayerStatus } = require('@discordjs/voice');
+const path = require('path');
+const config = require('./config.json');
 
-const top2000 = ("http://icecast.omroep.nl/radio2-bb-mp3")
 
-client.on("ready", async () => {
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildVoiceStates
+    ]
+});
+
+const voiceConnections = new Map();
+
+client.once('ready', () => {
     console.log(`${client.user.username} is online`);
     client.user.setActivity("NPO Radio 2 | >", { type: "WATCHING" });
-});
 
-client.on('message', message => {
-  let args = message.content.slice(config.prefix.length).trim().split(/ +/)
-  let cmd = args.shift().toLowerCase()
+    const commands = [
+        new SlashCommandBuilder()
+            .setName('radio')
+            .setDescription('Play live radio in your voice channel.'),
+        new SlashCommandBuilder()
+            .setName('volume')
+            .setDescription('Adjust the volume of the radio.')
+            .addNumberOption(option => option.setName('level').setDescription('Volume level (0-100)').setRequired(true))
+    ].map(command => command.toJSON());
 
-
-  if (cmd === `radio`) {
-      const voiceChannel = message.member.voice.channel;
-      if (!voiceChannel) {
-        return message.reply('Je moet in een spraakkanaal zijn om live radio te kunnen afspelen.');
-      }
-  
-      voiceChannel.join().then(connection => {
-        const radioStream = `${top2000}`;
-        const radioDispatcher = connection.play(radioStream);
-        radioDispatcher.setVolume(0.05);
-  
-        radioDispatcher.on('finish', () => {
-          voiceChannel.leave();
-        });
-      }).catch(console.error);
-    }
-  });
-  
-client.on('message', message => {
-  let args = message.content.slice(config.prefix.length).trim().split(/ +/)
-  let cmd = args.shift().toLowerCase()
-
-
-  if (cmd === `volume`) {
-    if (!message.member.roles.cache.get('908466170808639520')) {
-      return message.reply('Jij hebt geen rechten. Ga janken....');
-    }
-
-    const voiceConnection = message.guild.voice.connection;
-
-    if (!voiceConnection) {
-      return message.reply('je moet in een spraak kanaal zitten om dit te kunnen doen!!!');
-    }
-
-    const volume = parseFloat(message.content.split(' ')[1]);
-
-    voiceConnection.dispatcher.setVolume(volume / 100);
-    message.channel.send(`Volume veranderd naar -> ${volume}`);
-  }
-});
-
-
-  client.on("message", async message => {
-
-    if (message.author.bot) return;
-
-    if (message.channel.type == "dm") return;
-
-    if (!message.content.startsWith(config.prefix)) return;
-
-    var prefix = config.prefix;
-
-    var messageArray = message.content.split(" ");
-
-    var command = messageArray[0];
-
-    var arguments = messageArray.slice(1);
-
-    async function promptMessage(message, author, time, reactions) {
-        time *= 1000;
-
-        for (const reaction of reactions) {
-            await message.react(reaction);
+    const rest = new REST({ version: '10' }).setToken(config.token);
+    (async () => {
+        try {
+            await rest.put(Routes.applicationGuildCommands(config.clientId, config.guildId), { body: commands });
+            console.log('Successfully registered application commands.');
+        } catch (error) {
+            console.error(error);
         }
-        const filter = (reaction, user) => reactions.includes(reaction.emoji.name) && user.id === author.id;
-        return message.awaitReactions(filter, { max: 1, time: time }).then(collected => collected.first() && collected.first().emoji.name);
+    })();
+});
+
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isCommand()) return;
+
+    if (interaction.commandName === 'radio') {
+        const voiceChannel = interaction.member.voice.channel;
+        if (!voiceChannel) {
+            await interaction.reply({ content: 'You need to be in a voice channel to play radio!', ephemeral: true });
+            return;
+        }
+
+        const connection = joinVoiceChannel({
+            channelId: voiceChannel.id,
+            guildId: interaction.guild.id,
+            adapterCreator: interaction.guild.voiceAdapterCreator,
+        });
+
+        const player = createAudioPlayer();
+        const resource = createAudioResource("http://icecast.omroep.nl/radio2-bb-mp3", { inlineVolume: true });
+        resource.volume.setVolume(0.1); // Default volume
+        player.play(resource);
+        connection.subscribe(player);
+        voiceConnections.set(interaction.guild.id, { player, resource });
+
+        await interaction.reply({ content: 'Playing NPO Radio 2!', ephemeral: true });
+    } else if (interaction.commandName === 'volume') {
+        const volumeLevel = interaction.options.getNumber('level') / 100;
+        if (volumeLevel < 0 || volumeLevel > 1) {
+            await interaction.reply({ content: 'Volume level must be between 0 and 100.', ephemeral: true });
+            return;
+        }
+
+        const connectionDetails = voiceConnections.get(interaction.guild.id);
+        if (connectionDetails) {
+            connectionDetails.resource.volume.setVolume(volumeLevel);
+            await interaction.reply({ content: `Volume set to ${volumeLevel * 100}%`, ephemeral: true });
+        } else {
+            await interaction.reply({ content: 'The bot is not playing in any channel.', ephemeral: true });
+        }
     }
 });
 

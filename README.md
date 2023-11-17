@@ -7,5 +7,6 @@ Install packages
   - npm install @discordjs/rest
   - npm @discordjs/voice
   - npm install ffmpeg
+  - npm install ffmpeg-static
   - npm install sodium
   - npm install ytdl-core

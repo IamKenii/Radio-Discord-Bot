@@ -57,11 +57,6 @@ module.exports = {
     }
 };
 
-/**
- * Maak info embed
- * @param {string} message - Info message
- * @returns {EmbedBuilder} Info embed
- */
 function createInfoEmbed(message) {
     return new EmbedBuilder()
         .setColor('#0099ff')
@@ -70,11 +65,6 @@ function createInfoEmbed(message) {
         .setTimestamp();
 }
 
-/**
- * Maak warning embed
- * @param {string} message - Warning message
- * @returns {EmbedBuilder} Warning embed
- */
 function createWarningEmbed(message) {
     return new EmbedBuilder()
         .setColor('#ffaa00')
@@ -83,11 +73,6 @@ function createWarningEmbed(message) {
         .setTimestamp();
 }
 
-/**
- * Maak error embed
- * @param {string} message - Error message
- * @returns {EmbedBuilder} Error embed
- */
 function createErrorEmbed(message) {
     return new EmbedBuilder()
         .setColor('#ff0000')

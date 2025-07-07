@@ -3,13 +3,14 @@ Install discord.js
   - npm init
   
 Install packages
-  - npm install @discordjs/voice
-  - npm install @discordjs/opus
-  - npm install ffmpeg
-  - npm install ffmpeg-static
-  - npm install libsodium-wrappers
-  - npm install tweetnacl
-
+Open de 'package.json' en plak het volgende bij 'dependencies':
+    "@discordjs/opus": "^0.9.0",
+    "@discordjs/voice": "^0.18.0",
+    "axios": "^1.7.7",
+    "ffmpeg": "^0.0.4",
+    "ffmpeg-static": "^5.2.0",
+    "libsodium-wrappers": "^0.7.15",
+    "tweetnacl": "^1.0.3"
 
 Requirements
   - Python -> latest version

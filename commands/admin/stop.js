@@ -19,7 +19,6 @@ module.exports = {
 
         await interaction.reply('♻️ De bot wordt gestopt...');
 
-        // Herstart het proces (werkt alleen als een process manager zoals PM2 of Docker het opnieuw opstart)
         process.exit(0);
     }
 };

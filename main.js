@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, REST, Routes } = require('discord.js');
+const { Client, GatewayIntentBits, ActivityType, REST, Routes } = require('discord.js');
 const config = require('./config.json');
 const { loadCommands } = require('./functions/loadCommands');
 const { handleVoiceEvents } = require('./functions/voiceEventHandler');
@@ -50,7 +50,9 @@ async function registerCommands() {
 client.once('ready', async () => {
     console.log(`✅ ${client.user.username} is online!`);
     console.log(`📊 Actief in ${client.guilds.cache.size} servers`);
-    
+
+    client.user.setPresence({ activities: [{ name: `${config.status}`, type: ActivityType.Watching }],status: 'dnd' });
+
     // Voice event handlers instellen
     handleVoiceEvents(client);
 });

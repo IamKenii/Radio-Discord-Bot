@@ -3,7 +3,7 @@ const config = require('./config.json');
 const { loadCommands } = require('./functions/loadCommands');
 const { handleVoiceEvents } = require('./functions/voiceEventHandler');
 
-// Configuratie validatie
+// Configuratie validatie.
 if (!config.token || !config.clientId || !config.guildId) {
     console.error('❌ Ontbrekende configuratie! Controleer config.json');
     process.exit(1);

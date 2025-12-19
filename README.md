@@ -137,6 +137,16 @@ npm test
 - [@discordjs/voice](https://discord.js.org/#/docs/voice/main/general/welcome) - Voice connections
 - FFmpeg - Audio processing
 
+## Contributors
+
+Dank aan iedereen die heeft bijgedragen aan dit project! 🎉
+
+<a href="https://github.com/IamKenii/Radio-Discord-Bot/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=IamKenii/Radio-Discord-Bot" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
+
 ## Contact & Support
 
 - GitHub: [@IamKenii](https://github.com/IamKenii)
